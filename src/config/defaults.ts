@@ -24,6 +24,21 @@ const DEFAULT_MODEL_ALIASES: Readonly<Record<string, string>> = {
   // Google Gemini (3.x are preview ids in the catalog)
   gemini: "google/gemini-3-pro-preview",
   "gemini-flash": "google/gemini-3-flash-preview",
+
+  // EDU_ASSIST teacher default (teacher-student DualRun harness).
+  // The verified student runs gemini-3.1-pro-preview on Vertex AI's EU
+  // multi-region endpoint (provider google-vertex, project le-product2,
+  // location eu, baseUrl https://aiplatform.googleapis.com). Aliasing the
+  // teacher to the SAME provider+model keeps the comparison apples-to-apples;
+  // the harness sets `agents.defaults.model: edu-assist-teacher` (or the
+  // explicit "google-vertex/gemini-3.1-pro-preview" ref) so OpenClaw routes
+  // through Vertex EU rather than the public Gemini API. Vertex routing
+  // (project/location/baseUrl) is supplied by the gcloud-ADC env at runtime
+  // (GOOGLE_CLOUD_PROJECT=le-product2, GOOGLE_CLOUD_LOCATION=eu,
+  // GOOGLE_VERTEX_BASE_URL=https://aiplatform.googleapis.com); see
+  // docs/edu-assist-teacher.md. This is additive: it does not change any
+  // other provider default or the bare `gemini` alias.
+  "edu-assist-teacher": "google-vertex/gemini-3.1-pro-preview",
 };
 
 const DEFAULT_MODEL_COST: ModelDefinitionConfig["cost"] = {

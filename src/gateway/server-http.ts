@@ -19,6 +19,7 @@ import { loadConfig } from "../config/config.js";
 import type { createSubsystemLogger } from "../logging/subsystem.js";
 import { safeEqualSecret } from "../security/secret-equal.js";
 import { handleSlackHttpRequest } from "../slack/http/index.js";
+import { handleAgentTraceHttpRequest } from "./agent-trace-http.js";
 import {
   AUTH_RATE_LIMIT_SCOPE_HOOK_AUTH,
   createAuthRateLimiter,
@@ -526,6 +527,19 @@ export function createGatewayHttpServer(opts: {
       if (openAiChatCompletionsEnabled) {
         if (
           await handleOpenAiHttpRequest(req, res, {
+            auth: resolvedAuth,
+            trustedProxies,
+            allowRealIpFallback,
+            rateLimiter,
+          })
+        ) {
+          return;
+        }
+        // EDU_ASSIST teacher trace endpoint: POST /v1/agent/run -> {answer, trace}.
+        // Shares the OpenAI-compat enable flag + agent machinery; see
+        // agent-trace-http.ts for the request/response contract.
+        if (
+          await handleAgentTraceHttpRequest(req, res, {
             auth: resolvedAuth,
             trustedProxies,
             allowRealIpFallback,
